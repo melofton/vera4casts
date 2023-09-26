@@ -5,6 +5,7 @@
 #Purpose: make predictions with ETS model
 
 library(fable)
+library(distributional)
 
 #'Function to fit day of year model for chla
 #'@param data data frame with columns Date (yyyy-mm-dd) and
@@ -44,9 +45,12 @@ fableETS <- function(data, reference_datetime, forecast_horizon){
     as_tsibble(key = site_id, index = datetime)
   
   #make forecast
-  fc <- forecast(my.ets, new_data = new_data, bootstrap = TRUE) %>%
-    autoplot()
+  fc <- forecast(my.ets, new_data = new_data, bootstrap = TRUE, times = 500) 
   fc
+  check <- parameters(fc$observation)
+  vec <- unlist(check$x[1]) ## THIS IS HOW YOU GET THE ENSEMBLE VALUES MAYBE
+  ## NEED TO FIGURE OUT IF THE FIRST ELEMENT OF VEC FOR EACH TIME POINT IS
+  ## REALLY AN ENSEMBLE MEMBER
 
   #return output + model with best fit + plot
   return(list(out = df.out, ETS = my.ets, plot = ETS_plot))
