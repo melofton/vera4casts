@@ -12,19 +12,11 @@ predict.model.functions <- list.files("./multi-model-ensemble/code/function_libr
 sapply(paste0("./multi-model-ensemble/code/function_library/predict/",predict.model.functions),source,.GlobalEnv)
 
 #Read in data
-dat_persistence <- read_csv("./multi-model-ensemble/data/data_processed/persistence.csv")
-dat_historicalMean <- read_csv("./multi-model-ensemble/data/data_processed/historicalMean.csv")
-dat_DOY <- read_csv("./multi-model-ensemble/data/data_processed/DOY.csv")
-dat_ETS <- read_csv("./multi-model-ensemble/data/data_processed/ETS.csv")
-dat_ARIMA <- read_csv("./multi-model-ensemble/data/data_processed/ARIMA.csv")
-dat_TSLM <- read_csv("./multi-model-ensemble/data/data_processed/TSLM.csv")
-dat_processModels <- read_csv("./multi-model-ensemble/data/data_processed/processModels.csv")
-dat_XGBoost <- read_csv("./multi-model-ensemble/data/data_processed/XGBoost.csv")
-dat_prophet <- read_csv("./multi-model-ensemble/data/data_processed/prophet.csv")
+dat_ETS <- read_csv("./data/processed_targets/ETS.csv")
 
 #Set prediction window and forecast horizon
-pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2022-11-26"), by = "day")
-forecast_horizon = 35
+reference_datetime <- Sys.Date()
+forecast_horizon = 30
 
 #Load model output for JAGS models if needed
 load("./multi-model-ensemble/model_output/OptimumMonod_output.rds")
