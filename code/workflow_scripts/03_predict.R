@@ -44,7 +44,7 @@ write.csv(pred_ETS, forecast_file1, row.names = FALSE)
 
 # validate
 vera4castHelpers::forecast_output_validator(forecast_file1, target_variables = c("Chla_ugL"), theme_names = c("daily"))
-vera4castHelpers::submit(forecast_file1, ask = interactive(), s3_region = "submit", s3_endpoint = "ltreb-reservoirs.org", first_submission = TRUE)
+vera4castHelpers::submit(forecast_file1, s3_region = "submit", s3_endpoint = "ltreb-reservoirs.org", first_submission = TRUE)
 
 df <- readr::read_csv(forecast_file1, show_col_types = FALSE)
 model_id <- df$model_id[1]
