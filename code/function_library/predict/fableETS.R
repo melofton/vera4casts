@@ -1,17 +1,14 @@
-#fableETS
+#fableETS chl-a predictions for 30 days ahead
 #Author: Mary Lofton
 #Date: 26SEP23
 
 #Purpose: make predictions with ETS model
 
 library(fable)
-library(distributional)
 
 #'Function to fit day of year model for chla
 #'@param data data frame with columns Date (yyyy-mm-dd) and
 #'median daily EXO_chla_ugL_1 with chl-a measurements in ug/L
-
-data <- dat_ETS
 
 fableETS <- function(data, reference_datetime, forecast_horizon){
   
@@ -45,13 +42,24 @@ fableETS <- function(data, reference_datetime, forecast_horizon){
     as_tsibble(key = site_id, index = datetime)
   
   #make forecast
-  fc <- forecast(my.ets, new_data = new_data, bootstrap = TRUE, times = 500) 
-  fc
-  check <- parameters(fc$observation)
-  vec <- unlist(check$x[1]) ## THIS IS HOW YOU GET THE ENSEMBLE VALUES MAYBE
-  ## NEED TO FIGURE OUT IF THE FIRST ELEMENT OF VEC FOR EACH TIME POINT IS
-  ## REALLY AN ENSEMBLE MEMBER
-
-  #return output + model with best fit + plot
-  return(list(out = df.out, ETS = my.ets, plot = ETS_plot))
+  fc <- forecast(my.ets, new_data = new_data, bootstrap = TRUE, times = 500)
+  
+  ensemble <- matrix(data = NA, nrow = length(fc$observation), ncol = 500)
+  for(i in 1:length(fc$observation)){
+    ensemble[i,] <- unlist(fc$observation[i])
+  }
+  
+  ensemble_df <- data.frame(ensemble) %>%
+    add_column(site_id = rep(unique(df.out$site_id), each = length(fc_dates)),
+               datetime = rep(fc_dates,times = 2),
+               reference_datetime = reference_datetime,
+               family = "ensemble",
+               variable = "Chla_ugL",
+               model_id = "fableETS",
+               depth_m = ifelse(site_id == "fcre",1.6,1.5)) %>%
+    pivot_longer(X1:X500, names_to = "parameter", values_to = "prediction") %>%
+    mutate(across(parameter, substr, 2, nchar(parameter))) 
+  
+  #return ensemble output in EFI format
+  return(ensemble_df)
 }

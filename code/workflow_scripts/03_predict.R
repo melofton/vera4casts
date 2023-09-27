@@ -2,14 +2,18 @@
 #Author: Mary Lofton
 #Date: 26SEP23
 
-#Purpose: predict chl-a 30 days into future
+#Purpose: predict EXO chl-a 30 days into future at FCR and BVR
 
 library(tidyverse)
 library(lubridate)
 
+# Install VERA helpers package if have not already done so
+remotes::install_github("LTREB-reservoirs/vera4castHelpers")
+library(vera4castHelpers)
+
 #Load prediction functions
-predict.model.functions <- list.files("./multi-model-ensemble/code/function_library/predict")
-sapply(paste0("./multi-model-ensemble/code/function_library/predict/",predict.model.functions),source,.GlobalEnv)
+predict.model.functions <- list.files("./code/function_library/predict")
+sapply(paste0("./code/function_library/predict/",predict.model.functions),source,.GlobalEnv)
 
 #Read in data
 dat_ETS <- read_csv("./data/processed_targets/ETS.csv")
@@ -18,102 +22,35 @@ dat_ETS <- read_csv("./data/processed_targets/ETS.csv")
 reference_datetime <- Sys.Date()
 forecast_horizon = 30
 
-#Load model output for JAGS models if needed
-load("./multi-model-ensemble/model_output/OptimumMonod_output.rds")
-load("./multi-model-ensemble/model_output/OptimumSteele_output.rds")
-load("./multi-model-ensemble/model_output/OptimumSteeleNP_output.rds")
-
-#Load XGBoost model output
-load("./multi-model-ensemble/model_output/XGBoost_output.rds")
-
 #Predict chl-a
-#Each function should take processed data, pred_dates, and forecast_horizon
-#Each function should subset to pred_dates, run a forecast with max horizon of
-#forecast_horizon for each date, and return a dataframe with the following structure:
-#Model: name of model
-#referenceDate: forecast issue date (will be list of pred_dates)
-#Date: date of forecast (will go from pred_date[i] + 1 to pred_date[i] + 7 for each
-#referenceDate)
-#Chla_ugL: predicted value of chl-a
-
-pred_persistence <- persistence(data = dat_persistence,
-                                pred_dates = pred_dates,
-                                forecast_horizon = forecast_horizon)
-
-pred_historicalMean <- historicalMean(data = dat_historicalMean,
-                                pred_dates = pred_dates,
-                                forecast_horizon = forecast_horizon)
-
-pred_DOY <- DOY(data = dat_DOY,
-                pred_dates = pred_dates,
-                forecast_horizon = forecast_horizon)
-
 pred_ETS <- fableETS(data = dat_ETS,
-                     pred_dates = pred_dates,
+                     reference_datetime = reference_datetime,
                      forecast_horizon = forecast_horizon)
 
-pred_ARIMA <- fableARIMA(data = dat_ARIMA,
-                pred_dates = pred_dates,
-                forecast_horizon = forecast_horizon)
+# Start by writing the filepath
+theme <- 'daily'
+date <- pred_ETS$reference_datetime[1]
+forecast_name <- paste0(pred_ETS$model_id[1], ".csv")
 
-pred_TSLM <- fableTSLM(data = dat_TSLM,
-                         pred_dates = pred_dates,
-                         forecast_horizon = forecast_horizon)
+# Write the file locally
+forecast_file <- paste(theme, date, forecast_name, sep = '-')
+forecast_file
 
-pred_prophet <- pred_prophet(data = dat_prophet,
-                     pred_dates = pred_dates,
-                     forecast_horizon = forecast_horizon)
+forecast_file1 <- paste0("./model_output/",forecast_file)
+forecast_file1
 
-# process models
+# write to file
+write.csv(pred_ETS, forecast_file1, row.names = FALSE)
 
-pred_OptimumMonod <- OptimumMonod(data = dat_processModels,
-                                  pred_dates = pred_dates,
-                                  forecast_horizon = forecast_horizon,
-                                  fit = trim_OM)
+# validate
+vera4castHelpers::forecast_output_validator(forecast_file1, target_variables = c("Chla_ugL"), theme_names = c("daily"))
+vera4castHelpers::submit(forecast_file1, ask = interactive(), s3_region = "submit", s3_endpoint = "ltreb-reservoirs.org", first_submission = TRUE)
 
-pred_OptimumSteele <- OptimumSteele(data = dat_processModels,
-                                  pred_dates = pred_dates,
-                                  forecast_horizon = forecast_horizon,
-                                  fit = trim_OS)
+df <- readr::read_csv(forecast_file1, show_col_types = FALSE)
+model_id <- df$model_id[1]
 
-pred_SteeleNP <- OptimumSteeleNP(data = dat_processModels,
-                                    pred_dates = pred_dates,
-                                    forecast_horizon = forecast_horizon,
-                                    fit = trim_SNP)
-
-pred_MonodNP <- OptimumMonodNP(data = dat_processModels,
-                                 pred_dates = pred_dates,
-                                 forecast_horizon = forecast_horizon,
-                                 fit = trim_MNP)
-
-pred_XGBoost <- parsnipXGBoost(data = dat_XGBoost,
-                         pred_dates = pred_dates,
-                         forecast_horizon = forecast_horizon, 
-                         model = fit_XGBoost$XGBoost)
-
-
-
-# #Stack model output and write to file
-# mod_output <- bind_rows(pred_persistence, pred_historicalMean, pred_DOY, pred_ETS, pred_ARIMA, pred_TSLM)
-
-#OR if you only want to run one model
-mod_output <- read_csv("./multi-model-ensemble/model_output/validation_output.csv") %>%
-  #filter(!model_id == "XGBoost") %>%
-  bind_rows(.,pred_prophet)
-unique(mod_output$model_id)
-
-#OR if you are reading in LSTM output
-LSTM_output <- read_csv("./multi-model-ensemble/model_output/LSTM_output.csv") %>%
-  add_column(horizon = c(1:21)) %>%
-  gather(-horizon,key = "reference_datetime", value = "prediction") %>%
-  mutate(datetime = as.Date(reference_datetime) + horizon,
-         reference_datetime = as.Date(reference_datetime)) %>%
-  add_column(variable = "chlorophyll-a",
-             model_id = "LSTM") %>%
-  select(model_id, reference_datetime, datetime, variable, prediction)
-mod_output <- read_csv("./multi-model-ensemble/model_output/validation_output.csv") %>%
-  bind_rows(.,LSTM_output)
-unique(mod_output$model_id)
-
-write.csv(mod_output, "./multi-model-ensemble/model_output/validation_output.csv", row.names = FALSE)
-
+if(grep("(example)",model_id)){
+  message(paste0("You are submitting a forecast with 'example' in the model_id. As a example forecast, it will be processed but only retained for 30-days.\n",
+                 "No registration is required to submit an example forecast.\n",
+                 "If you want your forecast to be retained, please select a different model_id that does not contain `example` and register you model id at https://forms.gle/kg2Vkpho9BoMXSy57\n"))
+}
