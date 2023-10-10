@@ -1,6 +1,6 @@
-#fableETS chl-a predictions for 30 days ahead
+#fableNNETAR chl-a predictions for 30 days ahead
 #Author: Mary Lofton
-#Date: 26SEP23
+#Date: 10OCT23
 
 #Purpose: make predictions with ETS model
 
@@ -12,21 +12,21 @@ library(urca)
 #'@param data data frame with columns Date (yyyy-mm-dd) and
 #'median daily EXO_chla_ugL_1 with chl-a measurements in ug/L
 
-fableETS <- function(data, reference_datetime, forecast_horizon){
+fableNNETAR <- function(data, reference_datetime, forecast_horizon){
   
   #assign target and predictors
   df <- data %>%
     select(-depth_m, -variable) %>%
     as_tsibble(key = site_id, index = datetime)
   
-  #fit ARIMA from fable package
-  my.ets <- df %>%
-    model(ets = fable::ETS(observation)) 
-  fitted_values <- fitted(my.ets)
+  #fit NNETAR from fable package
+  my.nnar <- df %>%
+    model(nnar = fable::NNETAR(observation)) 
+  fitted_values <- fitted(my.nnar)
   
   #build output df
   df.out <- data.frame(site_id = df$site_id,
-                       model_id = "ETS",
+                       model_id = "NNETAR",
                        datetime = df$datetime,
                        variable = "Chla_ugL_mean",
                        depth_m = 1.6,
@@ -44,7 +44,7 @@ fableETS <- function(data, reference_datetime, forecast_horizon){
     as_tsibble(key = site_id, index = datetime)
   
   #make forecast
-  fc <- forecast(my.ets, new_data = new_data, bootstrap = TRUE, times = 500)
+  fc <- forecast(my.nnar, new_data = new_data, bootstrap = TRUE, times = 500)
   
   ensemble <- matrix(data = NA, nrow = length(fc$observation), ncol = 500)
   for(i in 1:length(fc$observation)){
@@ -56,8 +56,8 @@ fableETS <- function(data, reference_datetime, forecast_horizon){
                datetime = rep(fc_dates,times = 2),
                reference_datetime = reference_datetime,
                family = "ensemble",
-               variable = "Chla_ugL",
-               model_id = "fableETS",
+               variable = "Chla_ugL_mean",
+               model_id = "fableNNETAR",
                depth_m = ifelse(site_id == "fcre",1.6,1.5)) %>%
     pivot_longer(X1:X500, names_to = "parameter", values_to = "prediction") %>%
     mutate(across(parameter, substr, 2, nchar(parameter))) 

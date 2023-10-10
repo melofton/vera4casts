@@ -17,6 +17,9 @@ sapply(paste0("./code/function_library/predict/",predict.model.functions),source
 
 #Read in data
 dat_ETS <- read_csv("./data/processed_targets/ETS.csv")
+dat_ARIMA <- read_csv("./data/processed_targets/ARIMA.csv")
+dat_NNETAR <- read_csv("./data/processed_targets/NNETAR.csv")
+
 
 #Set prediction window and forecast horizon
 reference_datetime <- Sys.Date()
@@ -26,14 +29,31 @@ forecast_horizon = 30
 pred_ETS <- fableETS(data = dat_ETS,
                      reference_datetime = reference_datetime,
                      forecast_horizon = forecast_horizon)
+pred_ARIMA <- fableARIMA(data = dat_ARIMA,
+                     reference_datetime = reference_datetime,
+                     forecast_horizon = forecast_horizon)
+pred_NNETAR <- fableNNETAR(data = dat_NNETAR,
+                     reference_datetime = reference_datetime,
+                     forecast_horizon = forecast_horizon)
 
 # Start by writing the filepath
 theme <- 'daily'
-date <- pred_ETS$reference_datetime[1]
-forecast_name <- paste0(pred_ETS$model_id[1], ".csv")
+date <- Sys.Date()
+
+# LEFT OFF HERE
+# decide whether you really want to for-loop this or not, if you do
+# you probably need to make a for-loop above so the forecasts from
+# different models are elements in a list that can be referenced
+# in the forecast here
+
+forecast_names <- c(paste0(pred_ETS$model_id[1], ".csv"),
+                    paste0(pred_ARIMA$model_id[1], ".csv"),
+                    paste0(pred_NNETAR$model_id[1], ".csv"))
+
+for(i in 1:length(forecast_names)){
 
 # Write the file locally
-forecast_file <- paste(theme, date, forecast_name, sep = '-')
+forecast_file <- paste(theme, date, forecast_names[i], sep = '-')
 forecast_file
 
 forecast_file1 <- paste0("./model_output/",forecast_file)
@@ -46,11 +66,4 @@ write.csv(pred_ETS, forecast_file1, row.names = FALSE)
 vera4castHelpers::forecast_output_validator(forecast_file1, target_variables = c("Chla_ugL"), theme_names = c("daily"))
 vera4castHelpers::submit(forecast_file1, s3_region = "submit", s3_endpoint = "ltreb-reservoirs.org", first_submission = TRUE)
 
-df <- readr::read_csv(forecast_file1, show_col_types = FALSE)
-model_id <- df$model_id[1]
-
-if(grep("(example)",model_id)){
-  message(paste0("You are submitting a forecast with 'example' in the model_id. As a example forecast, it will be processed but only retained for 30-days.\n",
-                 "No registration is required to submit an example forecast.\n",
-                 "If you want your forecast to be retained, please select a different model_id that does not contain `example` and register you model id at https://forms.gle/kg2Vkpho9BoMXSy57\n"))
 }

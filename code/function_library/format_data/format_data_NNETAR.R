@@ -1,8 +1,8 @@
-#Format data for DOY model for chl-a
+#Format data for NNETAR model for chl-a
 #Author: Mary Lofton
-#Date: 13MAR23
+#Date: 10OCT23
 
-#Purpose: format data for DOY model for chla from 2018-2021
+#Purpose: format data for ARIMA model for chla from 2018-present
 
 #'Function to fit day of year model for chla
 #'@param targets filepath to exo targets for VERA
@@ -13,7 +13,7 @@ library(tidyverse)
 library(lubridate)
 library(zoo)
 
-format_data_ETS <- function(targets, end_date){
+format_data_NNETAR <- function(targets, end_date){
   
   #read in targets 
   dat <- read_csv(targets) %>%

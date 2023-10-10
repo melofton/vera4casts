@@ -12,7 +12,7 @@ data.format.functions <- list.files("./code/function_library/format_data")
 sapply(paste0("./code/function_library/format_data/", data.format.functions),source,.GlobalEnv)
 
 #Define targets filepath
-targets <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/daily/exo_daily-targets.csv.gz"
+targets <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/duration=P1D/P1D-targets.csv.gz"
 
 #Define start and end dates (needed for interpolation)
 end_date = Sys.Date()
@@ -20,7 +20,13 @@ end_date = Sys.Date()
 #Format data
 dat_ETS <- format_data_ETS(targets = targets,
                            end_date = end_date)
+dat_ARIMA <- format_data_ARIMA(targets = targets,
+                           end_date = end_date)
+dat_NNETAR <- format_data_NNETAR(targets = targets,
+                           end_date = end_date)
 
 #Write processed data to file
 write.csv(dat_ETS, "./data/processed_targets/ETS.csv",row.names = FALSE)
+write.csv(dat_ARIMA, "./data/processed_targets/ARIMA.csv",row.names = FALSE)
+write.csv(dat_NNETAR, "./data/processed_targets/NNETAR.csv",row.names = FALSE)
 
