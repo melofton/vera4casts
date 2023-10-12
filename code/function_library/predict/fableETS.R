@@ -56,7 +56,7 @@ fableETS <- function(data, reference_datetime, forecast_horizon){
                datetime = rep(fc_dates,times = 2),
                reference_datetime = reference_datetime,
                family = "ensemble",
-               variable = "Chla_ugL",
+               variable = "Chla_ugL_mean",
                model_id = "fableETS",
                duration = "P1D",
                project_id = "vera4cast",
