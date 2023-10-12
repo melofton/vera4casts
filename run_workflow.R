@@ -15,7 +15,7 @@ install.packages("urca")
 library(remotes)
 remotes::install_github("LTREB-reservoirs/vera4castHelpers", force = TRUE)
 
-source("./code/workflow_scripts/01_format.data.R")
+source("./code/workflow_scripts/01_format_data.R")
 source("./code/workflow_scripts/03_predict.R")
 
 
