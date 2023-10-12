@@ -58,6 +58,6 @@ write.csv(pred[[i]], forecast_file1, row.names = FALSE)
 
 # validate
 vera4castHelpers::forecast_output_validator(forecast_file1)
-vera4castHelpers::submit(forecast_file1, s3_region = "submit", s3_endpoint = "ltreb-reservoirs.org", first_submission = TRUE)
-
+vera4castHelpers::submit(forecast_file1, s3_region = "submit", s3_endpoint = "ltreb-reservoirs.org", first_submission = FALSE)
+Sys.sleep(60)
 }
