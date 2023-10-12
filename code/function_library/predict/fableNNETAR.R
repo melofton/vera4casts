@@ -21,7 +21,7 @@ fableNNETAR <- function(data, reference_datetime, forecast_horizon){
   
   #fit NNETAR from fable package
   my.nnar <- df %>%
-    model(nnar = fable::NNETAR(observation)) 
+    model(nnar = fable::NNETAR(log(observation + 0.001))) 
   fitted_values <- fitted(my.nnar)
   
   #build output df
@@ -58,9 +58,11 @@ fableNNETAR <- function(data, reference_datetime, forecast_horizon){
                family = "ensemble",
                variable = "Chla_ugL_mean",
                model_id = "fableNNETAR",
+               duration = "P1D",
+               project_id = "vera4cast",
                depth_m = ifelse(site_id == "fcre",1.6,1.5)) %>%
     pivot_longer(X1:X500, names_to = "parameter", values_to = "prediction") %>%
-    mutate(across(parameter, substr, 2, nchar(parameter))) 
+    mutate(across(parameter, substr, 2, nchar(parameter)))  
   
   #return ensemble output in EFI format
   return(ensemble_df)

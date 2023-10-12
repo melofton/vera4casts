@@ -21,7 +21,7 @@ fableARIMA <- function(data, reference_datetime, forecast_horizon){
   
   #fit ARIMA from fable package
   my.arima <- df %>%
-    model(arima = fable::ARIMA(observation)) 
+    model(arima = fable::ARIMA(log(observation + 0.001))) 
   fitted_values <- fitted(my.arima)
   
   #build output df
@@ -58,6 +58,8 @@ fableARIMA <- function(data, reference_datetime, forecast_horizon){
                family = "ensemble",
                variable = "Chla_ugL_mean",
                model_id = "fableARIMA",
+               duration = "P1D",
+               project_id = "vera4cast",
                depth_m = ifelse(site_id == "fcre",1.6,1.5)) %>%
     pivot_longer(X1:X500, names_to = "parameter", values_to = "prediction") %>%
     mutate(across(parameter, substr, 2, nchar(parameter))) 

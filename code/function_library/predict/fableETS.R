@@ -21,7 +21,7 @@ fableETS <- function(data, reference_datetime, forecast_horizon){
   
   #fit ARIMA from fable package
   my.ets <- df %>%
-    model(ets = fable::ETS(observation)) 
+    model(ets = fable::ETS(log(observation + 0.001))) 
   fitted_values <- fitted(my.ets)
   
   #build output df
@@ -58,6 +58,8 @@ fableETS <- function(data, reference_datetime, forecast_horizon){
                family = "ensemble",
                variable = "Chla_ugL",
                model_id = "fableETS",
+               duration = "P1D",
+               project_id = "vera4cast",
                depth_m = ifelse(site_id == "fcre",1.6,1.5)) %>%
     pivot_longer(X1:X500, names_to = "parameter", values_to = "prediction") %>%
     mutate(across(parameter, substr, 2, nchar(parameter))) 
