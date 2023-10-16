@@ -22,7 +22,7 @@ dat_NNETAR <- read_csv("./data/processed_targets/NNETAR.csv")
 
 #Set prediction window and forecast horizon
 reference_datetime <- Sys.Date()
-forecast_horizon = 30
+forecast_horizon = 35
 pred <- list()
 
 #Predict chl-a
