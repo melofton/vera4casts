@@ -36,7 +36,7 @@ pred[[3]] <- fableNNETAR(data = dat_NNETAR,
                      reference_datetime = reference_datetime,
                      forecast_horizon = forecast_horizon)
 
-# Start by writing the filepath
+# Submit chl-a forecasts
 theme <- 'daily'
 date <- Sys.Date()
 
@@ -53,6 +53,17 @@ forecast_file
 forecast_file1 <- paste0("./model_output/",forecast_file)
 forecast_file1
 
+# calculate probability of bloom
+mod <- pred[[i]] %>%
+  mutate(bloom = ifelse(prediction >= 20, 1, 0)) %>%
+  group_by(site_id, datetime, reference_datetime, family, variable, model_id, duration, project_id, depth_m) %>%
+  summarize(prediction = sum(bloom)/1000) %>%
+  mutate(family = "bernoulli",
+         variable = "Bloom_binary_mean") %>%
+  add_column(parameter = "prob")
+
+fc <- bind_rows(pred[[i]],mod)
+
 # write to file
 write.csv(pred[[i]], forecast_file1, row.names = FALSE)
 
@@ -61,3 +72,4 @@ vera4castHelpers::forecast_output_validator(forecast_file1)
 vera4castHelpers::submit(forecast_file1, s3_region = "submit", s3_endpoint = "ltreb-reservoirs.org", first_submission = FALSE)
 Sys.sleep(60)
 }
+
