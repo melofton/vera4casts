@@ -65,7 +65,7 @@ mod <- pred[[i]] %>%
 fc <- bind_rows(pred[[i]],mod)
 
 # write to file
-write.csv(pred[[i]], forecast_file1, row.names = FALSE)
+write.csv(fc, forecast_file1, row.names = FALSE)
 
 # validate
 vera4castHelpers::forecast_output_validator(forecast_file1)
