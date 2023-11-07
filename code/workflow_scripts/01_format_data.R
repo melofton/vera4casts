@@ -15,7 +15,7 @@ sapply(paste0("./code/function_library/format_data/", data.format.functions),sou
 targets <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz"
 
 #Define start and end dates (needed for interpolation)
-end_date = Sys.Date()
+end_date = curr_reference_datetime
 
 #Format data
 dat_ETS <- format_data_ETS(targets = targets,

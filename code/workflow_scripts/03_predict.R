@@ -21,7 +21,7 @@ dat_NNETAR <- read_csv("./data/processed_targets/NNETAR.csv")
 
 
 #Set prediction window and forecast horizon
-reference_datetime <- Sys.Date()
+reference_datetime <- curr_reference_datetime
 forecast_horizon = 35
 pred <- list()
 
@@ -38,7 +38,7 @@ pred[[3]] <- fableNNETAR(data = dat_NNETAR,
 
 # Submit chl-a forecasts
 theme <- 'daily'
-date <- Sys.Date()
+date <- curr_reference_datetime
 
 forecast_models <- c("fableETS","fableARIMA","fableNNETAR")
 
