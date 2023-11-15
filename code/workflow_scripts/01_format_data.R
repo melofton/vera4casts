@@ -24,6 +24,8 @@ dat_ARIMA <- format_data_ARIMA(targets = targets,
                            end_date = end_date)
 dat_NNETAR <- format_data_NNETAR(targets = targets,
                            end_date = end_date)
+dat_binary <- format_data_binary(targets = targets,
+                                 end_date = end_date)
 
 #Write processed data to file
 write.csv(dat_ETS, "./data/processed_targets/ETS.csv",row.names = FALSE)
