@@ -33,7 +33,11 @@ s3 <- arrow::s3_bucket("bio230121-bucket01/vera4cast/inventory/catalog",
                        endpoint_override = "renc.osn.xsede.org",
                        anonymous = TRUE)
 
-submitted_forecasts_df <- arrow::open_dataset(s3) |> collect()
+# submitted_forecasts_df <- arrow::open_dataset(s3) |> collect()
+
+content_raw <- readr::read_file_raw(s3)
+content_buffer <- buffer(content_raw)
+submitted_forecasts_df <- read_parquet(content_buffer)
 
 # is that forecast present in the bucket?
 for (i in 1:nrow(this_year)) {
