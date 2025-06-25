@@ -33,7 +33,7 @@ this_year$model_id <- challenge_model_names
   
 # vera bucket
 s3 <- arrow::s3_bucket("bio230121-bucket01/vera4cast/inventory/catalog",
-                       endpoint_override = "renc.osn.xsede.org",
+                       endpoint_override = "amnh1.osn.mghpcc.org/",
                        anonymous = TRUE)
 
 submitted_forecasts_df <- arrow::open_dataset(s3) |> 
