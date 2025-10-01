@@ -12,7 +12,7 @@ data.format.functions <- list.files("./code/function_library/format_data")
 sapply(paste0("./code/function_library/format_data/", data.format.functions),source,.GlobalEnv)
 
 #Define targets filepath
-targets <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz"
+targets <- "https://amnh1.osn.mghpcc.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz"
 
 #Define start and end dates (needed for interpolation)
 end_date = curr_reference_datetime
