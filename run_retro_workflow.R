@@ -67,7 +67,7 @@ this_year$model_id <- challenge_model_names
 #   as_date() |>
 #   unique()
 
-for (m in length(challenge_model_names)){
+for (m in challenge_model_names){
   
   s3_model_path <- paste0('bio230121-bucket01/vera4cast/forecasts/archive-parquet/project_id=vera4cast/duration=P1D/variable=Chla_ugL_mean/model_id=',m)
   
